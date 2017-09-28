@@ -4,18 +4,24 @@ pipeline {
         maven 'Maven_3.5.0'
         jdk 'JDK_8u111'
     }
-    stages {   
-        stage('Build') {
-            // Run the maven build
-            if (isUnix()) {
-                sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
-            } else {
-                bat(/"${mvnHome}\bin\mvn" -Dmaven.test.failure.ignore clean package/)
+    stages {
+        stage ('Initialize') {
+            steps {
+                sh '''
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                ''' 
             }
-        }
-        stage('Results') {
-            junit '**/target/surefire-reports/TEST-*.xml'
-            archive 'target/*.jar'
+        } 
+        stage('Build') {
+            steps {
+                sh "mvn' -Dmaven.test.failure.ignore clean package"
+            }
+            post {
+                success {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                }
+            }
         }
     }
 }
